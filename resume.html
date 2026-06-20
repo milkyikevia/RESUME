@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESUME_履歴書</title>
+    <script src="js/resume-data.js"></script>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/resume.css">
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print();">
+    <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+    PDF 出力 / 印刷
+</button>
+
+<div class="resume-container">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content" id="main"></main>
+</div>
+
+<script>
+    /* ── ユーティリティ ── */
+    function section(titleEn, titleJa, innerHtml) {
+        return `
+            <section class="timeline-section">
+                <div class="main-h2-wrapper">
+                    <div class="square-dot"></div>
+                    <h2 class="main-h2">${titleEn} | ${titleJa}</h2>
+                </div>
+                ${innerHtml}
+            </section>`;
+    }
+
+    function tlRow(date, contentHtml, isCurrent = false) {
+        return isCurrent
+            ? `<div class="tl-row"><div class="tl-date"></div><div class="tl-content tl-right">現在に至る</div></div>`
+            : `<div class="tl-row top"><div class="tl-date">${date}</div><div class="tl-content">${contentHtml}</div></div>`;
+    }
+
+    function timeline(rows) {
+        return `<div class="timeline">${rows}</div>`;
+    }
+
+    function renderResume() {
+        if (typeof RESUME_DATA === 'undefined') return;
+        const D = RESUME_DATA;
+
+        /* ── 写真ボックス共通HTML ── */
+        const photoContent = D.profile.photo
+            ? `<img src="${D.profile.photo}" alt="証明写真" class="photo-img">`
+            : `
+            <span class="photo-label">写真を貼る位置</span>
+            1. 縦36〜40mm<br>
+            　横24〜30mm<br>
+            2. 本人単身胸から上<br>
+            3. 裏面にのりづけ
+        `;
+
+        /* ── サイドバー描画 ── */
+        document.getElementById('sidebar').innerHTML = `
+            <div class="profile-zone">
+                <h1 class="name-title">${D.profile.name}</h1>
+                <span class="name-kana">${D.profile.kana}</span>
+                <div class="deco-line"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <h2 class="sidebar-h2">PROFILE</h2>
+
+                <div class="photo-box photo-desktop">${photoContent}</div>
+
+                <div class="profile-with-photo">
+                    <div class="info-grid">
+                        <span class="info-label">生年月日</span>
+                        <span class="info-value">${D.profile.birthdate}</span>
+
+                        <span class="info-label">性別</span>
+                        <span class="info-value">${D.profile.gender}</span>
+
+                        <span class="info-label">住所</span>
+                        <span class="info-value">${D.profile.zip}<br>${D.profile.address}</span>
+
+                        <span class="info-label">Email</span>
+                        <span class="info-value" style="word-break:break-all;">${D.profile.email}</span>
+
+                        <span class="info-label">TEL</span>
+                        <span class="info-value">${D.profile.tel}</span>
+
+                        <span class="info-label">GitHub</span>
+                        <span class="info-value ${D.profile.github ? '' : 'muted'}">${D.profile.github || '—'}</span>
+                    </div>
+                    <div class="photo-box photo-mobile">${photoContent}</div>
+                </div>
+            </div>
+        `;
+
+        /* ── 学歴 ── */
+        const eduRows = D.education.map(e =>
+            tlRow(e.date, e.content + (e.dept ? ` <span class="tl-dept">${e.dept}</span>` : ''))
+        ).join('');
+
+        /* ── 職歴 ── */
+        const workRows = D.workHistory.map(e => {
+            const rows = tlRow(e.date, e.content + (e.dept ? ` <span class="tl-dept">${e.dept}</span>` : ''));
+            return e.current ? rows + tlRow('', '', true) : rows;
+        }).join('');
+
+        /* ── 免許・資格 ── */
+        const licenseHtml = D.licenses.length === 0
+            ? `<div class="text-card empty">特記事項なし</div>`
+            : timeline(D.licenses.map(e => tlRow(e.date, e.content)).join(''));
+
+        /* ── 外部活動 ── */
+        const otherRows = D.otherExperiences.map(e => {
+            const bullets = e.bullets && e.bullets.length
+                ? `<ul class="detail-list">${e.bullets.map(b => `<li>${b}</li>`).join('')}</ul>`
+                : '';
+            return tlRow(e.date, e.content + bullets);
+        }).join('');
+        const otherSection = D.otherExperiences.length > 0
+            ? section('OTHER EXPERIENCE', '外部活動', timeline(otherRows))
+            : '';
+
+        /* ── メインエリア描画 ── */
+        document.getElementById('main').innerHTML = `
+            <header class="main-header">
+                <div class="doc-title" id="doc-title-target"></div>
+                <div class="date">${D.docDate}</div>
+            </header>
+
+            ${section('EDUCATION', '学 歴', timeline(eduRows))}
+            ${section('WORK EXPERIENCE', '職 歴', timeline(workRows))}
+            ${section('LICENSE', '免許・資格', licenseHtml)}
+            ${otherSection}
+            ${section('SUMMARY', '志望動機・自己PR', `<div class="text-card">${D.summary.replace(/\n/g, '<br>')}</div>`)}
+            ${section('NOTE', '備 考', `<div class="text-card">${D.note.replace(/\n/g, '<br>')}</div>`)}
+        `;
+        document.getElementById('doc-title-target').innerText = D.docTitle || 'RESUME | 履歴書';
+    }
+
+    document.addEventListener("DOMContentLoaded", renderResume);
+</script>
+
+</body>
+</html>

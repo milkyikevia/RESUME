@@ -1,0 +1,145 @@
+/* ===========================================================
+   index.css
+   index.html（一覧ページ）専用スタイル
+   common.css を先に読み込んだ上で使用してください
+   =========================================================== */
+
+/* index.html では resume-container をカード一覧の入れ物として使う */
+.resume-container {
+    grid-template-columns: 1fr;
+    padding: 0;
+}
+
+.index-hero {
+    background-color: var(--dark-sidebar);
+    color: #f8fafc;
+    padding: 56px 40px 48px;
+    text-align: center;
+}
+
+.index-hero .deco-line {
+    margin: 0 auto 18px;
+}
+
+.index-hero h1 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+.index-hero p {
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.index-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding: 40px;
+}
+
+.doc-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: #ffffff;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 28px 26px;
+    transition: all 0.25s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.doc-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--brand-green);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.doc-card:hover {
+    border-color: var(--brand-green-border);
+    box-shadow: 0 12px 28px rgba(16, 185, 129, 0.1);
+    transform: translateY(-3px);
+}
+
+.doc-card:hover::before {
+    opacity: 1;
+}
+
+.doc-card-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--brand-green);
+    margin-bottom: 14px;
+    display: block;
+}
+
+.doc-card-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 6px 0;
+}
+
+.doc-card-name {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin: 0 0 18px 0;
+}
+
+.doc-card-name.placeholder {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.doc-card-cta {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--brand-green);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.doc-card-cta svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    transition: transform 0.2s ease;
+}
+
+.doc-card:hover .doc-card-cta svg {
+    transform: translateX(3px);
+}
+
+.index-footer {
+    text-align: center;
+    padding: 0 40px 36px;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* ===== レスポンシブ対応（index.html 固有） ===== */
+@media (max-width: 868px) {
+    .index-cards {
+        grid-template-columns: 1fr;
+        padding: 28px 24px;
+    }
+
+    .index-hero {
+        padding: 44px 24px 36px;
+    }
+}
