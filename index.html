@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESUME | 一覧</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+
+<div class="resume-container">
+    <div class="index-hero">
+        <div class="deco-line"></div>
+        <h1>RESUME DOCUMENTS</h1>
+        <p>応募書類の一覧です。各カードをクリックすると詳細を確認できます。</p>
+    </div>
+
+    <div class="index-cards" id="card-target">
+        <!-- カードはJSで動的に挿入されます -->
+    </div>
+
+    <div class="index-footer">
+        内容を編集する場合は <code>js/resume-data.js</code> / <code>js/work-data.js</code> を更新してください。
+    </div>
+</div>
+
+<script>
+    const arrowIcon = `<svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>`;
+
+    function buildCard({ href, label, title, name, isPlaceholder }) {
+        const nameHtml = name
+            ? `<p class="doc-card-name">${name}</p>`
+            : `<p class="doc-card-name placeholder">${isPlaceholder}</p>`;
+
+        return `
+            <a class="doc-card" href="${href}">
+                <span class="doc-card-label">${label}</span>
+                <h2 class="doc-card-title">${title}</h2>
+                ${nameHtml}
+                <span class="doc-card-cta">詳細を見る ${arrowIcon}</span>
+            </a>
+        `;
+    }
+
+    async function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    async function renderCards() {
+        const target = document.getElementById('card-target');
+        const cards = [];
+
+        // ── 履歴書（js/resume-data.js） ──
+        try {
+            await loadScript('js/resume-data.js');
+            const R = typeof RESUME_DATA !== 'undefined' ? RESUME_DATA : null;
+            cards.push(buildCard({
+                href: 'resume.html',
+                label: 'RESUME',
+                title: (R && R.docTitle) || 'RESUME | 履歴書',
+                name: R && R.profile && R.profile.name,
+                isPlaceholder: '氏名未入力'
+            }));
+        } catch (e) {
+            cards.push(buildCard({
+                href: 'resume.html',
+                label: 'RESUME',
+                title: 'RESUME | 履歴書',
+                name: '',
+                isPlaceholder: 'データを読み込めませんでした'
+            }));
+        }
+
+        // ── 職務経歴書（js/work-data.js） ──
+        try {
+            await loadScript('js/work-data.js');
+            const W = typeof WORK_DATA !== 'undefined' ? WORK_DATA : null;
+            cards.push(buildCard({
+                href: 'work.html',
+                label: 'CAREER',
+                title: (W && W.docTitle) || 'RESUME | 職務経歴書',
+                name: W && W.profile && W.profile.name,
+                isPlaceholder: '氏名未入力'
+            }));
+        } catch (e) {
+            cards.push(buildCard({
+                href: 'work.html',
+                label: 'CAREER',
+                title: 'RESUME | 職務経歴書',
+                name: '',
+                isPlaceholder: 'データを読み込めませんでした'
+            }));
+        }
+
+        target.innerHTML = cards.join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', renderCards);
+</script>
+
+</body>
+</html>
