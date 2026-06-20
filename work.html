@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESUME_職務経歴書</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/work.css">
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print();">
+    <svg viewBox="0 0 24 24">
+        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+    </svg>
+    PDF 出力 / 印刷
+</button>
+
+<div class="resume-container">
+    <aside class="sidebar" id="sidebar-target"></aside>
+    <main class="main-content">
+        <header class="main-header" id="main-header">
+            <div class="doc-title" id="doc-title-target"></div>
+            <div class="date" id="doc-date-target"></div>
+        </header>
+
+        <div id="experience-target"></div>
+    </main>
+</div>
+
+<script src="js/work-data.js"></script>
+
+<script>
+    function renderWorkHistory() {
+        if (typeof WORK_DATA === 'undefined') return;
+
+        document.getElementById('doc-date-target').innerText = WORK_DATA.docDate;
+        document.getElementById('doc-title-target').innerText = WORK_DATA.docTitle || 'RESUME | 職務経歴書';
+
+        const sidebarTarget = document.getElementById('sidebar-target');
+        let sidebarHTML = `
+            <div class="profile-zone">
+                <h1 class="name-title">${WORK_DATA.profile.name}</h1>
+                <span class="name-kana">${WORK_DATA.profile.kana}</span>
+                <div class="deco-line"></div>
+            </div>
+            <div class="sidebar-section">
+                <h2 class="sidebar-h2">SUMMARY</h2>
+                <div class="summary-text">${WORK_DATA.profile.summary}</div>
+            </div>
+            <div class="sidebar-section">
+                <h2 class="sidebar-h2">TECHNICAL SKILLS</h2>
+        `;
+
+        WORK_DATA.technicalSkills.forEach(group => {
+            const tagsHTML = group.tags.map(tag => `<span class="tech-tag">${tag}</span>`).join('');
+            sidebarHTML += `
+                <div class="skill-group">
+                    <div class="skill-label">${group.category}</div>
+                    <div class="tag-wrapper">
+                        ${tagsHTML}
+                    </div>
+                </div>
+            `;
+        });
+        sidebarHTML += `</div>`;
+        sidebarTarget.innerHTML = sidebarHTML;
+
+        const expTarget = document.getElementById('experience-target');
+        const isEmpty = !WORK_DATA.workExperiences || WORK_DATA.workExperiences.length === 0;
+        document.getElementById('main-header').classList.toggle('no-border', isEmpty);
+
+        if (isEmpty) {
+            expTarget.innerHTML = '';
+            return;
+        }
+
+        const sectionTitle = WORK_DATA.sectionTitle || 'WORK EXPERIENCE | 職務内容';
+        let mainHTML = `
+            <section>
+                <div class="main-h2-wrapper">
+                    <div class="square-dot"></div>
+                    <h2 class="main-h2">${sectionTitle}</h2>
+                </div>
+        `;
+
+        WORK_DATA.workExperiences.forEach(company => {
+            mainHTML += `
+                <div class="company-card">
+                    <div class="company-header">
+                        <span class="company-name">${company.companyName}</span>
+                        <span class="company-period">${company.period}</span>
+                    </div>
+                    <div class="company-dept">${company.dept}</div>
+            `;
+
+            company.projects.forEach(project => {
+                const metaString = project.meta.join(' | ');
+
+                const tasksHTML = project.tasks.map(task => `
+                    <li>
+                        <span class="task-tag-label">${task.label}</span>
+                        <span class="task-desc">${task.text}</span>
+                    </li>
+                `).join('');
+
+                mainHTML += `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <span class="project-title">${project.title}</span>
+                            <div class="project-meta-box">${metaString}</div>
+                        </div>
+                        <div class="project-desc">${project.desc}</div>
+                        <ul class="task-list">
+                            ${tasksHTML}
+                        </ul>
+                        <div class="tech-tag-box"><span>■</span> 技術要素 : ${project.tech}</div>
+                    </div>
+                `;
+            });
+
+            mainHTML += `</div>`;
+        });
+
+        mainHTML += `</section>`;
+        expTarget.innerHTML = mainHTML;
+    }
+
+    document.addEventListener("DOMContentLoaded", renderWorkHistory);
+</script>
+</body>
+</html>
